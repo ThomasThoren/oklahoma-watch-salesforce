@@ -7,7 +7,7 @@ A Heroku setup to periodically download and process Salesforce donor data and sy
 http://oklahomawatch.org/individual-donors/
 
 .. image:: https://travis-ci.org/ThomasThoren/oklahoma-watch-salesforce.svg?branch=master
-    :target: https://travis-ci.org/ThomasThoren/oklahoma-watch-salesforce
+    :target: https://travis-ci.org/ThomasThoren/oklahoma-watch-salesforce?branch=master
 
 .. image:: https://coveralls.io/repos/github/ThomasThoren/oklahoma-watch-salesforce/badge.svg?branch=master
    :target: https://coveralls.io/github/ThomasThoren/oklahoma-watch-salesforce?branch=master
