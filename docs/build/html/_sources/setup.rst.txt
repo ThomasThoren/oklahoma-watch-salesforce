@@ -42,20 +42,16 @@ These environment variables are used through the application. Define them either
 
     export HEROKU_APP=oklahoma-watch-salesforce
 
-    # Salesforce credentials
-    export OK_WATCH_SALESFORCE_CONSUMER_KEY=
-    export OK_WATCH_SALESFORCE_CONSUMER_SECRET=
+    export SLACK_THOMASTHOREN_ACCESS_TOKEN=
+
     export OK_WATCH_SALESFORCE_USERNAME=
     export OK_WATCH_SALESFORCE_PASSWORD=
     export OK_WATCH_SALESFORCE_SECURITY_TOKEN=
 
-    # AWS S3 credentials
+    # S3 credentials
     export AWS_ACCESS_KEY_ID=
     export AWS_SECRET_ACCESS_KEY=
     export AWS_DEFAULT_REGION=
-
-    # Slack
-    export SLACK_THOMASTHOREN_ACCESS_TOKEN=
 
 Heroku
 ------
