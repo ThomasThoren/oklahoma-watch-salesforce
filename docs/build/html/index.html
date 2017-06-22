@@ -1,0 +1,241 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>oklahoma-watch-salesforce &#8212; oklahoma-watch-salesforce 1.0.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="oklahoma-watch-salesforce">
+<h1>oklahoma-watch-salesforce<a class="headerlink" href="#oklahoma-watch-salesforce" title="Permalink to this headline">¶</a></h1>
+<p>A Heroku setup to periodically download and process Salesforce donor data and sync with a WordPress website.</p>
+<p><a class="reference external" href="http://oklahomawatch.org/individual-donors/">http://oklahomawatch.org/individual-donors/</a></p>
+<a class="reference external image-reference" href="https://travis-ci.org/ThomasThoren/oklahoma-watch-salesforce"><img alt="https://travis-ci.org/ThomasThoren/oklahoma-watch-salesforce.svg?branch=master" src="https://travis-ci.org/ThomasThoren/oklahoma-watch-salesforce.svg?branch=master" /></a>
+<a class="reference external image-reference" href="https://coveralls.io/github/ThomasThoren/oklahoma-watch-salesforce?branch=master"><img alt="https://coveralls.io/repos/github/ThomasThoren/oklahoma-watch-salesforce/badge.svg?branch=master" src="https://coveralls.io/repos/github/ThomasThoren/oklahoma-watch-salesforce/badge.svg?branch=master" /></a>
+<ul class="simple">
+<li><a class="reference external" href="https://ThomasThoren.github.io/oklahoma-watch-salesforce/build/html/">Documentation</a></li>
+<li><a class="reference external" href="https://github.com/ThomasThoren/oklahoma-watch-salesforce/issues">Issues</a></li>
+<li><a class="reference external" href="https://coveralls.io/r/ThomasThoren/oklahoma-watch-salesforce">Test coverage</a></li>
+<li><a class="reference external" href="https://travis-ci.org/ThomasThoren/oklahoma-watch-salesforce">Travis CI builds</a></li>
+</ul>
+<div class="section" id="usage">
+<span id="id1"></span><h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Heroku hosts the application and runs the <code class="docutils literal"><span class="pre">Procfile</span></code> once per day. This includes <code class="docutils literal"><span class="pre">scripts/main.py</span></code> to download and process Salesforce donor data and <code class="docutils literal"><span class="pre">scripts/upload.sh</span></code> to upload CSV files to an AWS S3 bucket.</p>
+<p>The TablePress plugin for WordPress then downloads those CSV files from S3 once per day.</p>
+</div>
+<div class="section" id="setup">
+<span id="id2"></span><h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dependencies">
+<h3>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Python 3.6</li>
+<li>Pandas</li>
+<li>Heroku (application and command-line tool)</li>
+<li>AWS S3 bucket</li>
+<li>WordPress’ TablePress plugin with Table Auto Update extension</li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
+<p>When creating a virtual environment for this project, make sure to use Python 3.4 or later.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>mkvirtualenv --python<span class="o">=</span><span class="sb">`</span>which python3<span class="sb">`</span> oklahoma-watch-salesforce
+</pre></div>
+</div>
+<p>Install the Python dependencies.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install -r requirements.txt
+</pre></div>
+</div>
+<p>Install the Heroku command-line tool. See <a class="reference external" href="https://devcenter.heroku.com/articles/heroku-command-line">this guide</a> for other operating systems.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>brew install heroku
+</pre></div>
+</div>
+</div>
+<div class="section" id="environment-variables">
+<h3>Environment variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h3>
+<p>These environment variables are used through the application. Define them either in <code class="docutils literal"><span class="pre">~/.env</span></code>, <code class="docutils literal"><span class="pre">~/.virtualenvs/oklahoma-watch-salesforce/bin/postactivate</span></code> or any other file that is sourced.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">HEROKU_APP</span><span class="o">=</span>oklahoma-watch-salesforce
+
+<span class="c1"># Salesforce credentials</span>
+<span class="nb">export</span> <span class="nv">OK_WATCH_SALESFORCE_CONSUMER_KEY</span><span class="o">=</span>
+<span class="nb">export</span> <span class="nv">OK_WATCH_SALESFORCE_CONSUMER_SECRET</span><span class="o">=</span>
+<span class="nb">export</span> <span class="nv">OK_WATCH_SALESFORCE_USERNAME</span><span class="o">=</span>
+<span class="nb">export</span> <span class="nv">OK_WATCH_SALESFORCE_PASSWORD</span><span class="o">=</span>
+<span class="nb">export</span> <span class="nv">OK_WATCH_SALESFORCE_SECURITY_TOKEN</span><span class="o">=</span>
+
+<span class="c1"># AWS S3 credentials</span>
+<span class="nb">export</span> <span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span>
+<span class="nb">export</span> <span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>
+<span class="nb">export</span> <span class="nv">AWS_DEFAULT_REGION</span><span class="o">=</span>
+
+<span class="c1"># Slack</span>
+<span class="nb">export</span> <span class="nv">SLACK_THOMASTHOREN_ACCESS_TOKEN</span><span class="o">=</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="heroku">
+<h3>Heroku<a class="headerlink" href="#heroku" title="Permalink to this headline">¶</a></h3>
+<p>Configure the Heroku application’s environment variables by running the <code class="docutils literal"><span class="pre">scripts/config.sh</span></code> script.</p>
+</div>
+<div class="section" id="travis-ci">
+<h3>Travis CI<a class="headerlink" href="#travis-ci" title="Permalink to this headline">¶</a></h3>
+<p>Note: Travis CI is only free if your GitHub repo is public.</p>
+<p>Make sure the Travis CI gem is installed.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>gem install travis
+</pre></div>
+</div>
+<p>Encrypt and add each environment variable by running the <code class="docutils literal"><span class="pre">scripts/config.sh</span></code> script. Note that <a class="reference external" href="https://docs.travis-ci.com/user/encryption-keys#Note-on-escaping-certain-symbols">Travis CI can’t use environment variables containing Bash special characters</a>. Make sure all passwords and tokens meet this standard.</p>
+</div>
+<div class="section" id="aws-s3-bucket">
+<h3>AWS S3 bucket<a class="headerlink" href="#aws-s3-bucket" title="Permalink to this headline">¶</a></h3>
+<p>Create an S3 bucket to store the CSV files for TablePress. This project uses the <code class="docutils literal"><span class="pre">membership.oklahomawatch.org</span></code> bucket.</p>
+</div>
+<div class="section" id="tests">
+<h3>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h3>
+<p>Run tests.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>coverage run --source<span class="o">=</span>scripts -m unittest
+</pre></div>
+</div>
+<p>Determine the code coverage.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>coverage report
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id3">
+<span id="id4"></span><h2>Heroku<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>Read the <a class="reference external" href="https://devcenter.heroku.com/articles/getting-started-with-python#introduction">Getting Started guide</a> if this is your first time working with Heroku.</p>
+<p>Create an application to host and run your scripts. This project’s slug is <code class="docutils literal"><span class="pre">oklahoma-watch-salesforce</span></code>. See the <a class="reference external" href="https://dashboard.heroku.com/">Heroku applications dashboard</a> for all of your applications.</p>
+<p>Make sure to set up an automatic pull from your GitHub repo’s master branch. Also install the <a class="reference external" href="https://scheduler.heroku.com/dashboard">Heroku Scheduler</a> add-on. Configure it to run <code class="docutils literal"><span class="pre">bash</span> <span class="pre">scripts/main.sh</span></code> daily.</p>
+</div>
+<div class="section" id="salesforce">
+<span id="id5"></span><h2>Salesforce<a class="headerlink" href="#salesforce" title="Permalink to this headline">¶</a></h2>
+<p>Accounts are made up of one or more Contacts. For example, the Thoren Household is an Account. Thomas Thoren is a Contact within that Account.</p>
+<p>Donations are called Opportunities even if they have been charged and fulfilled, and can come from individuals, foundations or companies.</p>
+<div class="section" id="resources">
+<h3>Resources<a class="headerlink" href="#resources" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><a class="reference external" href="https://na30.salesforce.com/_ui/core/application/force/connectedapp/ForceConnectedApplicationPage/d?applicationId=06P36000000CxF6">This application</a>.</li>
+<li><a class="reference external" href="https://developer.salesforce.com/docs/atlas.en-us.soql_sosl.meta/soql_sosl/sforce_api_calls_soql_sosl_intro.htm">Intro to SOQL and SOSL</a>.</li>
+<li>Test Salesforce queries using the <a class="reference external" href="https://workbench.developerforce.com/query.php">SOQL workbench</a>.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="tablepress">
+<span id="id6"></span><h2>TablePress<a class="headerlink" href="#tablepress" title="Permalink to this headline">¶</a></h2>
+<p>Install the <a class="reference external" href="https://tablepress.org/">TablePress plugin</a> for your WordPress website, along with its <a class="reference external" href="https://tablepress.org/extensions/table-auto-import/">Table Auto Update extension</a>.</p>
+<p>In the TablePress menu, select the “Import” tab to create a new table. Specify that you are importing with a URL and enter the AWS S3 link. Select “CSV” as the import format.</p>
+<p>In the the “Auto Import Tables” section and select the “Perform Auto Update” dropdown menu. Choose the option that fits best, such as “Once Daily.”</p>
+<p>Scroll down to your table and make sure it has the “Active” box checked. Refresh the page after a minue and you should see a “Last Auto Import” time.</p>
+<p>To edit the styles and features of the table, go to the “All Tables” tab in the TablePress plugin, select your table and scroll to the bottom to make adjustments.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">oklahoma-watch-salesforce</a><ul>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#setup">Setup</a><ul>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#environment-variables">Environment variables</a></li>
+<li><a class="reference internal" href="#heroku">Heroku</a></li>
+<li><a class="reference internal" href="#travis-ci">Travis CI</a></li>
+<li><a class="reference internal" href="#aws-s3-bucket">AWS S3 bucket</a></li>
+<li><a class="reference internal" href="#tests">Tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id3">Heroku</a></li>
+<li><a class="reference internal" href="#salesforce">Salesforce</a><ul>
+<li><a class="reference internal" href="#resources">Resources</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tablepress">TablePress</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Thomas Thoren.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

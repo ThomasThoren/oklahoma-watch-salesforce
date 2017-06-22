@@ -1,0 +1,9 @@
+data/
+notebooks/
+node_modules/
+
+.coverage
+TODO.md
+package.json
+package-lock.json
+*.scpt
