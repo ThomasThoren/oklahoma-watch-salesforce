@@ -1,9 +1,9 @@
 data/
 notebooks/
 node_modules/
+*/__pycache__/*
 
 .coverage
 TODO.md
-package.json
-package-lock.json
+package*.json
 *.scpt
