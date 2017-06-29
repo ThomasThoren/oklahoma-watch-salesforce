@@ -4,13 +4,18 @@ import os
 import csv
 import numpy as np
 import pandas as pd
+import sys
 
 from datetime import date
 from slacker import Slacker
 from simple_salesforce import Salesforce
 from simple_salesforce.api import SalesforceRefusedRequest
 
-import scripts
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from scripts import (
+    SLACK_CHANNEL, SLACK_ACCESS_TOKEN, PROJECT_DIR, SALESFORCE_CREDENTIALS)
 
 # The Contact and Opportunity tables have no relationship in Salesforce,
 #   so there are two queries that get joined in Pandas.
@@ -34,7 +39,7 @@ donors_contacts_query = """
 
 def get_slack_connection(session=None):
     """Connect to Slack."""
-    return Slacker(scripts.SLACK_ACCESS_TOKEN, session=session)
+    return Slacker(SLACK_ACCESS_TOKEN, session=session)
 
 
 def query_salesforce(sf, query):
@@ -56,7 +61,7 @@ def query_salesforce(sf, query):
             message = error['message']
 
             slack.chat.post_message(
-                scripts.SLACK_CHANNEL,
+                SLACK_CHANNEL,
                 text=f'ERROR: {message}. @channel')
         raise e
 
@@ -206,7 +211,7 @@ def write_levels_csv(df, year):
         df (:class:`DataFrame`): Donors and their giving levels.
         year (str): The year when these donations were given.
     """
-    csv_out = '{0}/data/{1}.csv'.format(scripts.PROJECT_DIR, year)
+    csv_out = '{0}/data/{1}.csv'.format(PROJECT_DIR, year)
 
     if not os.path.exists(os.path.dirname(csv_out)):
         os.makedirs(os.path.dirname(csv_out))
@@ -253,9 +258,9 @@ def get_donations_by_donor(df):
 def get_salesforce_connection(session=None):
     """Connect to Salesforce."""
     return Salesforce(
-        username=scripts.SALESFORCE_CREDENTIALS['USERNAME'],
-        password=scripts.SALESFORCE_CREDENTIALS['PASSWORD'],
-        security_token=scripts.SALESFORCE_CREDENTIALS['SECURITY_TOKEN'],
+        username=SALESFORCE_CREDENTIALS['USERNAME'],
+        password=SALESFORCE_CREDENTIALS['PASSWORD'],
+        security_token=SALESFORCE_CREDENTIALS['SECURITY_TOKEN'],
         session=session)
 
 

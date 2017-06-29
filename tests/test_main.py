@@ -1,28 +1,20 @@
 """Unit tests for scripts/initialize.py."""
 
-import requests
-import unittest
+import os
 import pandas as pd
+import requests
+import sys
+import unittest
 
 from mock import patch, call
-
 from simple_salesforce.api import SalesforceRefusedRequest
 
-from scripts.main import (
-    get_slack_connection,
-    query_salesforce,
-    create_opportunities_df,
-    create_contacts_df,
-    clean_opportunities_df,
-    clean_contacts_df,
-    build_series_no_serial_comma,
-    merge_and_slice,
-    bin_donors_by_giving_level,
-    write_levels_csv,
-    get_donations_by_year,
-    get_donations_by_donor,
-    get_salesforce_connection,
-    process_annual_donations)
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts')))
+
+from scripts import main
 
 
 class TestMain(unittest.TestCase):
@@ -34,7 +26,7 @@ class TestMain(unittest.TestCase):
         mock_sf.query_all.return_value = 'data'
         query = 'query'
 
-        returned = query_salesforce(mock_sf, query)
+        returned = main.query_salesforce(mock_sf, query)
 
         self.assertEqual(returned, 'data')
 
@@ -47,7 +39,7 @@ class TestMain(unittest.TestCase):
             'url', 'status', 'resource_name', [{'message': 'Error'}])
 
         with self.assertRaises(SalesforceRefusedRequest):
-            query_salesforce(mock_sf, query)
+            main.query_salesforce(mock_sf, query)
 
         assert mock_slack.called
 
@@ -57,7 +49,7 @@ class TestMain(unittest.TestCase):
             {'Amount': '10', 'CloseDate': '2016', 'AccountId': '1', 'X': 'Y'},
             {'Amount': '20', 'CloseDate': '2015', 'AccountId': '2', 'X': 'Z'}]}
 
-        actual = create_opportunities_df(response)
+        actual = main.create_opportunities_df(response)
         expected = pd.DataFrame.from_dict([
             {'AMT': '10', 'DATE': '2016', 'ACCOUNT': '1'},
             {'AMT': '20', 'DATE': '2015', 'ACCOUNT': '2'}])
@@ -70,7 +62,7 @@ class TestMain(unittest.TestCase):
             {'Name': 'John', 'AccountId': '1', 'X': 'Y'},
             {'Name': 'Jane', 'AccountId': '2', 'X': 'Z'}]}
 
-        actual = create_contacts_df(response)
+        actual = main.create_contacts_df(response)
         expected = pd.DataFrame.from_dict([{'NAME': 'John', 'ACCOUNT': '1'},
                                            {'NAME': 'Jane', 'ACCOUNT': '2'}])
 
@@ -83,7 +75,7 @@ class TestMain(unittest.TestCase):
              {'AMT': 2, 'DATE': '2015-12-25', 'ACCOUNT': '2'}]
         df = pd.DataFrame.from_dict(d)
 
-        actual = clean_opportunities_df(df)
+        actual = main.clean_opportunities_df(df)
         expected = pd.DataFrame.from_dict([
             {'AMT': 1, 'YEAR': 2016, 'ACCOUNT': '1'},
             {'AMT': 2, 'YEAR': 2015, 'ACCOUNT': '2'}])
@@ -100,7 +92,7 @@ class TestMain(unittest.TestCase):
              {'ACCOUNT': '1', 'NAME': 'Jim'}]
         df = pd.DataFrame.from_dict(d)
 
-        actual = clean_contacts_df(df)
+        actual = main.clean_contacts_df(df)
         expected = pd.DataFrame.from_dict(
             [{'ACCOUNT': '1', 'NAME': 'John, Jane and Jim'}])
 
@@ -108,23 +100,23 @@ class TestMain(unittest.TestCase):
 
     def test_build_series_no_serial_comma_empty(self):
         """Test build_series_no_serial_comma() with empty list."""
-        name_series = build_series_no_serial_comma([])
+        name_series = main.build_series_no_serial_comma([])
         self.assertEqual(name_series, "")
 
     def test_build_series_no_serial_comma_single_name(self):
         """Test build_series_no_serial_comma() with a single name."""
-        name_series = build_series_no_serial_comma(["John"])
+        name_series = main.build_series_no_serial_comma(["John"])
         self.assertEqual(name_series, "John")
 
     def test_build_series_no_serial_comma_two_names(self):
         """Test build_series_no_serial_comma() with two names."""
-        name_series = build_series_no_serial_comma(["John", "Jane"])
+        name_series = main.build_series_no_serial_comma(["John", "Jane"])
         self.assertEqual(name_series, "John and Jane")
 
     def test_build_series_no_serial_comma_three_names(self):
         """Test build_series_no_serial_comma() with three names."""
-        name_series = build_series_no_serial_comma(["John", "Jane", "Jim"])
-        self.assertEqual(name_series, "John, Jane and Jim")
+        series = main.build_series_no_serial_comma(["John", "Jane", "Jim"])
+        self.assertEqual(series, "John, Jane and Jim")
 
     def test_merge_and_slice(self):
         """Test merge_and_slice()."""
@@ -137,7 +129,7 @@ class TestMain(unittest.TestCase):
             {'ACCOUNT': '1', 'NAME': 'John and Jan'},
             {'ACCOUNT': '2', 'NAME': 'Jim'}])
 
-        actual = merge_and_slice(opps_df, contacts_df).sort_index(axis=1)
+        actual = main.merge_and_slice(opps_df, contacts_df).sort_index(axis=1)
 
         d = [{'ACCOUNT': '1', 'NAME': 'John and Jan', 'AMT': 10, 'YEAR': 2015},
              {'ACCOUNT': '1', 'NAME': 'John and Jan', 'AMT': 20, 'YEAR': 2016},
@@ -156,7 +148,7 @@ class TestMain(unittest.TestCase):
                                      {'AMT': 1000, 'NAME': 'Jan Doe'},
                                      {'AMT': 5000, 'NAME': 'Jim'}])
 
-        actual = bin_donors_by_giving_level(df).sort_index(axis=1)
+        actual = main.bin_donors_by_giving_level(df).sort_index(axis=1)
 
         d = [{'AMT': 5000, 'NAME': 'Jim', 'LASTNAME': 'Jim',
               'LEVEL': "<strong>Publisher's Circle\n$2,500-$4,999</strong>"},
@@ -185,7 +177,7 @@ class TestMain(unittest.TestCase):
             {'NAME': 'Jane Doe', 'LEVEL': "Publisher's Circle"},
             {'NAME': 'John Deere', 'LEVEL': "Editor's Circle"}])
 
-        write_levels_csv(df, '2016')
+        main.write_levels_csv(df, '2016')
 
         mock_csv_calls = [
             call(["Publisher's Circle"]),
@@ -206,7 +198,7 @@ class TestMain(unittest.TestCase):
             {'YEAR': 2017, 'ACCOUNT': '2', 'AMT': 500, 'NAME': 'Jane Doe'},
             {'YEAR': 2017, 'ACCOUNT': '2', 'AMT': 500, 'NAME': 'Jane Doe'}])
 
-        returned = get_donations_by_year(df).sort_index(axis=1)
+        returned = main.get_donations_by_year(df).sort_index(axis=1)
         expected = pd.DataFrame.from_dict([
             {'YEAR': 2015, 'ACCOUNT': '1', 'AMT': 1500, 'NAME': 'John Doe'},
             {'YEAR': 2016, 'ACCOUNT': '1', 'AMT': 200, 'NAME': 'John Doe'},
@@ -224,7 +216,7 @@ class TestMain(unittest.TestCase):
             {'YEAR': 2017, 'ACCOUNT': '2', 'AMT': 500, 'NAME': 'Jane Doe'},
             {'YEAR': 2017, 'ACCOUNT': '2', 'AMT': 500, 'NAME': 'Jane Doe'}])
 
-        returned = get_donations_by_donor(df).sort_index(axis=1)
+        returned = main.get_donations_by_donor(df).sort_index(axis=1)
         expected = pd.DataFrame.from_dict([
             {'YEAR': 'all-time', 'ACCOUNT': '1',
              'AMT': 1700, 'NAME': 'John Doe'},
@@ -237,7 +229,7 @@ class TestMain(unittest.TestCase):
         """Test get_slack_connection() and credentials."""
         session = requests.Session()
 
-        slack = get_slack_connection(session=session)
+        slack = main.get_slack_connection(session=session)
         assert slack.auth.test()
 
         session.close()
@@ -246,7 +238,7 @@ class TestMain(unittest.TestCase):
         """Test get_salesforce_connection() and credentials."""
         session = requests.Session()
 
-        sf = get_salesforce_connection(session=session)
+        sf = main.get_salesforce_connection(session=session)
         assert sf
 
         session.close()
@@ -261,7 +253,7 @@ class TestMain(unittest.TestCase):
 
         mock_bin.return_value = df
 
-        process_annual_donations(df)
+        main.process_annual_donations(df)
 
         mock_csv_calls = [
             call(df[df['YEAR'] == 2015], '2015'),
@@ -271,3 +263,6 @@ class TestMain(unittest.TestCase):
         # Need to use Pandas' `.equals()` to test for equality instead of same.
         for i, mock_csv_call in enumerate(mock_csv_calls):
             self.assertTrue(mock_csv.call_args_list[i].equals(mock_csv_call))
+
+if __name__ == '__main__':
+    unittest.main()
