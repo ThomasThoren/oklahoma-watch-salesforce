@@ -217,7 +217,7 @@ def write_levels_csv(df, year):
         os.makedirs(os.path.dirname(csv_out))
 
     with open(csv_out, 'w') as out_file:
-        csvwriter = csv.writer(out_file)
+        csvwriter = csv.writer(out_file, quoting=csv.QUOTE_ALL)
 
         current_level = ''
         for donor in df[['NAME', 'LEVEL']].itertuples():
