@@ -34,9 +34,9 @@ DONORS_CONTACTS_QUERY = """
     FROM Contact"""
 
 
-def get_slack_connection():
+def get_slack_connection(session=None):  # For tests
     """Connect to Slack."""
-    return Slacker(SLACK_ACCESS_TOKEN, session=None)
+    return Slacker(SLACK_ACCESS_TOKEN, session=session)
 
 
 def query_salesforce(salesforce_connection, soql_query: str) -> dict:
