@@ -6,5 +6,4 @@ aws s3 sync \
   --acl public-read \
   --cache-control "private" \
   --expires "2012-12-21 00:00:00 -0000" \
-  --exclude ".DS_Store" \
-  --profile okwatch_membership
+  --exclude ".DS_Store"
