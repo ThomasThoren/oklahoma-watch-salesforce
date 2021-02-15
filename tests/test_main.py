@@ -43,39 +43,39 @@ class TestMain(unittest.TestCase):
 
         assert mock_slack.called
 
-    def test_create_opportunities_df(self):
-        """Test create_opportunities_df()."""
+    def test_create_opportunities_dataframe(self):
+        """Test create_opportunities_dataframe()."""
         response = {'records': [
             {'Amount': '10', 'CloseDate': '2016', 'AccountId': '1', 'X': 'Y'},
             {'Amount': '20', 'CloseDate': '2015', 'AccountId': '2', 'X': 'Z'}]}
 
-        actual = main.create_opportunities_df(response)
+        actual = main.create_opportunities_dataframe(response)
         expected = pd.DataFrame.from_dict([
             {'AMT': '10', 'DATE': '2016', 'ACCOUNT': '1'},
             {'AMT': '20', 'DATE': '2015', 'ACCOUNT': '2'}])
 
         self.assertTrue(actual.equals(expected))
 
-    def test_create_contacts_df(self):
-        """Test create_contacts_df()."""
+    def test_create_contacts_dataframe(self):
+        """Test create_contacts_dataframe()."""
         response = {'records': [
             {'Name': 'John', 'AccountId': '1', 'X': 'Y'},
             {'Name': 'Jane', 'AccountId': '2', 'X': 'Z'}]}
 
-        actual = main.create_contacts_df(response)
+        actual = main.create_contacts_dataframe(response)
         expected = pd.DataFrame.from_dict([{'NAME': 'John', 'ACCOUNT': '1'},
                                            {'NAME': 'Jane', 'ACCOUNT': '2'}])
 
         self.assertTrue(actual.equals(expected))
 
     @patch('scripts.main.build_series_no_serial_comma')
-    def test_clean_opportunities_df(self, mock_build_series):
-        """Test clean_opportunities_df()."""
+    def test_clean_opportunities_dataframe(self, mock_build_series):
+        """Test clean_opportunities_dataframe()."""
         d = [{'AMT': '1', 'DATE': '2016-10-31', 'ACCOUNT': '1'},
              {'AMT': 2, 'DATE': '2015-12-25', 'ACCOUNT': '2'}]
         df = pd.DataFrame.from_dict(d)
 
-        actual = main.clean_opportunities_df(df)
+        actual = main.clean_opportunities_dataframe(df)
         expected = pd.DataFrame.from_dict([
             {'AMT': 1, 'YEAR': 2016, 'ACCOUNT': '1'},
             {'AMT': 2, 'YEAR': 2015, 'ACCOUNT': '2'}])
@@ -83,8 +83,8 @@ class TestMain(unittest.TestCase):
         self.assertTrue(actual.equals(expected))
 
     @patch('scripts.main.build_series_no_serial_comma')
-    def test_clean_contacts_df(self, mock_build_series):
-        """Test clean_contacts_df()."""
+    def test_clean_contacts_dataframe(self, mock_build_series):
+        """Test clean_contacts_dataframe()."""
         mock_build_series.return_value = 'John, Jane and Jim'
 
         d = [{'ACCOUNT': '1', 'NAME': 'John'},
@@ -92,7 +92,7 @@ class TestMain(unittest.TestCase):
              {'ACCOUNT': '1', 'NAME': 'Jim'}]
         df = pd.DataFrame.from_dict(d)
 
-        actual = main.clean_contacts_df(df)
+        actual = main.clean_contacts_dataframe(df)
         expected = pd.DataFrame.from_dict(
             [{'ACCOUNT': '1', 'NAME': 'John, Jane and Jim'}])
 
@@ -120,16 +120,16 @@ class TestMain(unittest.TestCase):
 
     def test_merge_and_slice(self):
         """Test merge_and_slice()."""
-        opps_df = pd.DataFrame.from_dict([
+        opps_dataframe = pd.DataFrame.from_dict([
             {'ACCOUNT': '1', 'AMT': 10, 'YEAR': 2015},
             {'ACCOUNT': '1', 'AMT': 20, 'YEAR': 2016},
             {'ACCOUNT': '2', 'AMT': 30, 'YEAR': 2017}])
 
-        contacts_df = pd.DataFrame.from_dict([
+        contacts_dataframe = pd.DataFrame.from_dict([
             {'ACCOUNT': '1', 'NAME': 'John and Jan'},
             {'ACCOUNT': '2', 'NAME': 'Jim'}])
 
-        actual = main.merge_and_slice(opps_df, contacts_df).sort_index(axis=1)
+        actual = main.merge_and_slice(opps_dataframe, contacts_dataframe).sort_index(axis=1)
 
         d = [{'ACCOUNT': '1', 'NAME': 'John and Jan', 'AMT': 10, 'YEAR': 2015},
              {'ACCOUNT': '1', 'NAME': 'John and Jan', 'AMT': 20, 'YEAR': 2016},
@@ -225,14 +225,14 @@ class TestMain(unittest.TestCase):
 
         self.assertTrue(returned.equals(expected))
 
-    def test_get_slack_connection(self):
-        """Test get_slack_connection() and credentials."""
-        session = requests.Session()
+    # def test_get_slack_connection(self):
+    #     """Test get_slack_connection() and credentials."""
+    #     session = requests.Session()
 
-        slack = main.get_slack_connection(session=session)
-        assert slack.auth.test()
+    #     slack = main.get_slack_connection(session=session)
+    #     assert slack.auth.test()
 
-        session.close()
+    #     session.close()
 
     def test_get_salesforce_connection(self):
         """Test get_salesforce_connection() and credentials."""
